@@ -30,24 +30,23 @@ class CheckoutPage(private val device: UiDevice) {
     }
 
     fun finishCheckout() {
-        // En la página de Overview, el botón FINISH suele estar abajo.
-        // Hacemos scroll hasta encontrarlo.
+        // On the Overview page, the FINISH button is usually at the bottom.
         val scrollable = UiScrollable(UiSelector().scrollable(true))
         
-        // Buscamos el objeto con descripción "test-FINISH" haciendo scroll
+        // Scroll until finding the "FINISH" button
         try {
-            scrollable.scrollTextIntoView("FINISH") // Intenta por texto
+            scrollable.scrollTextIntoView("FINISH")
         } catch (e: Exception) {
-            // Si falla por texto, intentamos scroll manual o simplemente buscamos el objeto
+            // Fallback: manual swipe or object search handled below
         }
 
-        // Esperamos a que el botón sea visible tras el scroll
+        // Wait for the button to be visible after scroll
         val element = device.wait(Until.findObject(finishButton), 5000)
         
         if (element != null) {
             element.click()
         } else {
-            // Intento desesperado: scroll vertical simple
+            // Last resort: simple vertical swipe
             device.swipe(500, 1500, 500, 500, 20)
             device.findObject(finishButton)?.click() ?: throw RuntimeException("Finish button not found even after scroll")
         }
