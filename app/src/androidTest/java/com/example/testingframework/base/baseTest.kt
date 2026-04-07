@@ -21,10 +21,10 @@ open class BaseTest {
             "monkey -p $packageName -c android.intent.category.LAUNCHER 1"
         )
 
-        // Wait for app to load
-        Thread.sleep(3000)
+        // Wait a bit more for the splash screen to pass and app to stabilize
+        Thread.sleep(5000)
 
-        // Ensure we are logged out before each test starts
+        // Ensure we start with a clean state (Login Screen)
         logoutIfLoggedIn()
     }
 

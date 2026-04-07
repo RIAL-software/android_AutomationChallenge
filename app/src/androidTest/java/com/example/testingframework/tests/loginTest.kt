@@ -3,6 +3,7 @@ package com.example.testingframework.tests
 import com.example.testingframework.base.BaseTest
 import com.example.testingframework.pages.LoginPage
 import com.example.testingframework.pages.HomePage
+import com.example.testingframework.data.TestData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -17,14 +18,15 @@ class LoginTest : BaseTest() {
         val loginPage = LoginPage(device)
         val homePage = HomePage(device)
 
-        // Login with valid credentials
-        loginPage.login("standard_user", "secret_sauce")
+        // 1. Intentamos el login
+        loginPage.login(TestData.VALID_USER, TestData.VALID_PASSWORD)
 
-        // Assertion: Verify NO error message is displayed
-        assertFalse("Unexpected error message displayed", loginPage.isErrorVisible())
+        // 2. Aserción mejorada: Si falla, nos dirá exactamente QUÉ error encontró
+        val errorMessage = loginPage.getErrorMessageText()
+        assertFalse("Se detectó un error inesperado: '$errorMessage'", loginPage.isErrorVisible())
 
-        // Assertion: Verify we reached the Products screen
-        assertTrue("Failed to reach HomePage after login", homePage.isOnHomePage())
+        // 3. Verificamos que llegamos a la Home Page
+        assertTrue("No se detectó la pantalla de productos tras el login", homePage.isOnHomePage())
     }
 
     @Test
@@ -32,14 +34,11 @@ class LoginTest : BaseTest() {
         val loginPage = LoginPage(device)
         val homePage = HomePage(device)
 
-        // 1. Ensure we are logged in first
-        loginPage.login("standard_user", "secret_sauce")
-        assertTrue("User should be on Products page before logout", homePage.isOnHomePage())
+        loginPage.login(TestData.VALID_USER, TestData.VALID_PASSWORD)
+        assertTrue("El usuario debería estar logueado", homePage.isOnHomePage())
 
-        // 2. Perform Logout
         homePage.logout()
 
-        // 3. Assertion: Verify we are back on the login screen
-        assertTrue("User should be back on the Login Page after logout", loginPage.isOnLoginPage())
+        assertTrue("El usuario debería volver al Login tras cerrar sesión", loginPage.isOnLoginPage())
     }
 }
