@@ -18,15 +18,11 @@ class LoginTest : BaseTest() {
         val loginPage = LoginPage(device)
         val homePage = HomePage(device)
 
-        // 1. Intentamos el login
         loginPage.login(TestData.VALID_USER, TestData.VALID_PASSWORD)
 
-        // 2. Aserción mejorada: Si falla, nos dirá exactamente QUÉ error encontró
         val errorMessage = loginPage.getErrorMessageText()
-        assertFalse("Se detectó un error inesperado: '$errorMessage'", loginPage.isErrorVisible())
-
-        // 3. Verificamos que llegamos a la Home Page
-        assertTrue("No se detectó la pantalla de productos tras el login", homePage.isOnHomePage())
+        assertFalse("Unexpected error detected: '$errorMessage'", loginPage.isErrorVisible())
+        assertTrue("Products screen not detected after login", homePage.isOnHomePage())
     }
 
     @Test
@@ -35,10 +31,37 @@ class LoginTest : BaseTest() {
         val homePage = HomePage(device)
 
         loginPage.login(TestData.VALID_USER, TestData.VALID_PASSWORD)
-        assertTrue("El usuario debería estar logueado", homePage.isOnHomePage())
+        assertTrue("User should be logged in", homePage.isOnHomePage())
 
         homePage.logout()
+        assertTrue("User should return to Login after logout", loginPage.isOnLoginPage())
+    }
 
-        assertTrue("El usuario debería volver al Login tras cerrar sesión", loginPage.isOnLoginPage())
+    @Test
+    fun loginWithInvalidPassword() {
+        val loginPage = LoginPage(device)
+        
+        loginPage.login(TestData.VALID_USER, TestData.INVALID_PASSWORD)
+
+        assertTrue("Error message should be visible with invalid password", 
+            loginPage.isErrorVisible())
+        
+        val errorText = loginPage.getErrorMessageText()
+        assertTrue("Error message is not as expected: '$errorText'", 
+            errorText.contains("Username and password do not match", ignoreCase = true))
+    }
+
+    @Test
+    fun loginWithLockedOutUser() {
+        val loginPage = LoginPage(device)
+
+        loginPage.login(TestData.LOCKED_OUT_USER, TestData.VALID_PASSWORD)
+
+        assertTrue("Error message should be visible for locked out user", 
+            loginPage.isErrorVisible())
+
+        val errorText = loginPage.getErrorMessageText()
+        assertTrue("Error message is not as expected: '$errorText'",
+            errorText.contains("Sorry, this user has been locked out", ignoreCase = true))
     }
 }

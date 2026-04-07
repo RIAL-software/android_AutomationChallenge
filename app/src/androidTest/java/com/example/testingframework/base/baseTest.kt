@@ -16,21 +16,25 @@ open class BaseTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         device = UiDevice.getInstance(instrumentation)
 
-        // Launch app
-        device.executeShellCommand(
-            "monkey -p $packageName -c android.intent.category.LAUNCHER 1"
-        )
+        // Force stop the app to ensure a fresh start
+        device.executeShellCommand("am force-stop $packageName")
 
-        // Wait a bit more for the splash screen to pass and app to stabilize
-        Thread.sleep(5000)
+        // Launch the app
+        device.executeShellCommand("monkey -p $packageName -c android.intent.category.LAUNCHER 1")
 
-        // Ensure we start with a clean state (Login Screen)
+        // Wait for the app to appear in the foreground
+        device.waitForWindowUpdate(packageName, 5000)
+        
+        // Give the app some extra time to settle
+        Thread.sleep(3000)
+
+        // Only logout if we are actually logged in
         logoutIfLoggedIn()
     }
 
     private fun logoutIfLoggedIn() {
         val homePage = HomePage(device)
-        // If we see the products title, it means we are logged in
+        // Check if we are on the products page
         if (homePage.isOnHomePage()) {
             homePage.logout()
         }
@@ -38,8 +42,7 @@ open class BaseTest {
 
     @After
     fun tearDown() {
-        // Ensure we logout after the test finishes to leave the app in a clean state
-        logoutIfLoggedIn()
+        // Press home to exit the app
         device.pressHome()
     }
 }
